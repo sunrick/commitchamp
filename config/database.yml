@@ -1,0 +1,4 @@
+adapter: sqlite3
+database: db/commitchamp.db
+timeout: 1000
+pool: 5
