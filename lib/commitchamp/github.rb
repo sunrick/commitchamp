@@ -21,14 +21,8 @@ module Commitchamp
       Github.get("/repos/#{owner}/#{repo}/stats/contributors", options)
     end
 
-    def get_repos(org, page=1)
-      params = {
-        page: page
-      }
-      options = {
-        headers: @headers,
-        query: params
-      }
+    def get_repos(org)
+      options = { headers: @headers }
       Github.get("/orgs/#{org}/repos", options)
     end
 
