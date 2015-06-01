@@ -5,8 +5,8 @@ class CreateContributions < ActiveRecord::Migration
       t.integer :additions
       t.integer :deletions
       t.integer :commits
-      t.belongs_to :user
-      t.belongs_to :repo_id
+      t.integer :user_id
+      t.integer :repo_id
     end
   end
   
