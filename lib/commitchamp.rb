@@ -70,7 +70,6 @@ module Commitchamp
         }
         self.create_contribution(result)
       end
-      puts "#{repo} | #{contributions.length}"
     end
 
     def get_sum(weeks, data_type)
@@ -107,11 +106,39 @@ module Commitchamp
     end
 
     def run
+      input = self.prompt("Do you want to fetch new data (f) or look at existing data (d)?", /^[fd]$/i)
       org = self.prompt("What organization do you want?", /^\w+$/).downcase
+      if input.downcase == "f"
+        self.fetch(org)
+        self.analyze(org)
+      else
+        no_data?(org)
+        self.analyze(org)
+      end
+    end
+
+    def fetch(org)
       self.get_org_repos(org)
       repos = Repo.where(owner: org).all
       repos.each do |repo|
         self.get_repo_contributions(org, repo.name)
+      end
+    end
+
+    def analyze(org)
+      puts "What repo do you want? Please enter integer"
+      available = Repo.where(owner: org)
+      available.each do |x|
+        puts "#{x.id} | #{x.name}"
+      end
+      input = gets.chomp.to_i
+      Commitchamp::Contribution.where(repo_id: input).group(:user_id)
+    end
+
+    def no_data?(org)
+      unless Repo.exists?(owner: org)
+        puts "Sorry, I don't have that data, will fetch it for you..."
+        self.fetch(org)
       end
     end
 
@@ -120,4 +147,5 @@ module Commitchamp
 end
 
 app = Commitchamp::App.new
+app.run
 binding.pry
