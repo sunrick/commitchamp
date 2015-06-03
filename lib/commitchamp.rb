@@ -29,7 +29,7 @@ module Commitchamp
     def get_org_repos(org)
       page = 1
       repos = @github.get_repos(org, page)
-      while repos.length != 0
+      while repos.length == 30
         repos.each do |repo|
           result = {
             owner: repo['owner']['login'],
@@ -74,10 +74,12 @@ module Commitchamp
 
     def get_sum(weeks, data_type)
       result = []
-      weeks.each do |week|
-        result << week[data_type]
+      if weeks != nil
+        weeks.each do |week|
+          result << week[data_type]
+        end
+      result = result.sum
       end
-      result = result.inject {|sum, x| sum + x}
     end
 
     def create_contribution(contrib_hash)
@@ -131,8 +133,18 @@ module Commitchamp
       available.each do |x|
         puts "#{x.id} | #{x.name}"
       end
-      input = gets.chomp.to_i
-      Commitchamp::Contribution.where(repo_id: input).group(:user_id)
+      repo_id = gets.chomp.to_i
+      self.display_info(repo_id)
+    end
+
+    def display_info(repo_id)
+      repo = Repo.find(repo_id)
+      top_contributors = repo.contributions.order('additions + deletions DESC').limit(10)
+      puts "\nContributions for #{repo.name} in the #{repo.owner} organization!"
+      puts "\nGithub User - Additions - Deletions - Commits\n"
+      top_contributors.each do |contributor|
+        puts "#{contributor.user.login} - #{contributor.additions} - #{contributor.deletions} - #{contributor.commits}"
+      end
     end
 
     def no_data?(org)
@@ -148,4 +160,3 @@ end
 
 app = Commitchamp::App.new
 app.run
-binding.pry
